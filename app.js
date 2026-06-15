@@ -1,3 +1,11 @@
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
 const sb = getSupabaseClient();
 const form = document.getElementById("registrationForm");
 const photoInput = document.getElementById("photoInput");
@@ -46,6 +54,7 @@ form.addEventListener("submit", async (event)=>{
     email: document.getElementById("email").value.trim(),
     city: document.getElementById("city").value.trim(),
     photo_url: photoData,
+    password_hash: await hashPassword(document.getElementById("password").value),
     status: "registered",
     used_at: null
   };
@@ -71,3 +80,51 @@ form.addEventListener("submit", async (event)=>{
 });
 
 document.getElementById("printTicket").addEventListener("click",()=>window.print());
+const loginForm = document.getElementById("loginForm");
+
+if (loginForm) {
+  loginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+
+    const passwordHash = await hashPassword(password);
+
+    const { data, error } = await sb
+      .from("guests")
+      .select("*")
+      .eq("email", email)
+      .single();
+
+    if (error || !data) {
+      alert("Nincs ilyen regisztráció.");
+      return;
+    }
+
+    if (data.password_hash !== passwordHash) {
+      alert("Hibás jelszó.");
+      return;
+    }
+
+    ticketPhoto.src = data.photo_url || "";
+    ticketName.textContent = data.full_name;
+    ticketMeta.textContent = `Azonosító: ${data.qr_code}`;
+
+    ticketCard.classList.remove("hidden");
+
+    qrHolder.innerHTML = "";
+
+    new QRCode(qrHolder, {
+      text: data.qr_code,
+      width: 230,
+      height: 230,
+      correctLevel: QRCode.CorrectLevel.H
+    });
+
+    ticketCard.scrollIntoView({
+      behavior: "smooth",
+      block: "center"
+    });
+  });
+}
