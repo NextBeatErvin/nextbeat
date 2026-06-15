@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NextBeat - Profil</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="index.html" class="logo-button">
+    <img src="assets/nextbeat-logo-color.png" alt="NextBeat">
+  </a>
+  <div class="menu">
+    <a href="index.html">Főoldal</a>
+    <a href="profile.html">Bejelentkezés</a>
+    <a href="scanner.html">QR beolvasó</a>
+    <a href="admin.html">Admin</a>
+  </div>
+</nav>
+
+<main class="section">
+  <p class="label">Profil</p>
+  <h2>Bejelentkezés / adatmódosítás</h2>
+
+  <form id="loginProfileForm" class="form-card">
+    <label>Email cím</label>
+    <input id="loginEmail" type="email" required>
+
+    <label>Jelszó</label>
+    <input id="loginPassword" type="password" required>
+
+    <button class="btn primary full" type="submit">Belépés</button>
+  </form>
+
+  <form id="profileForm" class="form-card hidden">
+    <h3>Saját adatok</h3>
+
+    <label>Profilkép módosítása</label>
+    <input id="profilePhoto" type="file" accept="image/*">
+    <img id="profilePreview" class="photo-preview" style="display:block;">
+
+    <label>Teljes név</label>
+    <input id="profileName" type="text" required>
+
+    <label>Telefonszám</label>
+    <input id="profilePhone" type="tel" required>
+
+    <label>Email</label>
+    <input id="profileEmail" type="email" disabled>
+
+    <label>Város</label>
+    <input id="profileCity" type="text" required>
+
+    <button class="btn primary full" type="submit">Adatok mentése</button>
+
+    <h3 style="margin-top:30px;">Saját QR-kód</h3>
+    <div id="profileQr" class="qr-box"></div>
+  </form>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="config.js"></script>
+
+<script>
+const sb = getSupabaseClient();
+let currentGuest = null;
+let newPhotoData = "";
+
+async function hashPassword(password) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(password);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+document.getElementById("loginProfileForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const email = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const passwordHash = await hashPassword(password);
+
+  const { data, error } = await sb
+    .from("guests")
+    .select("*")
+    .eq("email", email)
+    .single();
+
+  if (error || !data) {
+    alert("Nincs ilyen regisztráció.");
+    return;
+  }
+
+  if (data.password_hash !== passwordHash) {
+    alert("Hibás jelszó.");
+    return;
+  }
+
+  currentGuest = data;
+
+  document.getElementById("profileName").value = data.full_name;
+  document.getElementById("profilePhone").value = data.phone;
+  document.getElementById("profileEmail").value = data.email;
+  document.getElementById("profileCity").value = data.city;
+  document.getElementById("profilePreview").src = data.photo_url || "";
+
+  document.getElementById("loginProfileForm").classList.add("hidden");
+  document.getElementById("profileForm").classList.remove("hidden");
+
+  document.getElementById("profileQr").innerHTML = "";
+  new QRCode(document.getElementById("profileQr"), {
+    text: data.qr_code,
+    width: 230,
+    height: 230
+  });
+});
+
+document.getElementById("profilePhoto").addEventListener("change", () => {
+  const file = document.getElementById("profilePhoto").files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    newPhotoData = event.target.result;
+    document.getElementById("profilePreview").src = newPhotoData;
+  };
+  reader.readAsDataURL(file);
+});
+
+async function uploadProfilePhoto(qrCode, photoBase64) {
+  if (!photoBase64) return currentGuest.photo_url;
+
+  const response = await fetch(photoBase64);
+  const blob = await response.blob();
+  const filePath = `${qrCode}.jpg`;
+
+  await sb.storage
+    .from("guest-photos")
+    .upload(filePath, blob, {
+      contentType: "image/jpeg",
+      upsert: true
+    });
+
+  const { data } = sb.storage.from("guest-photos").getPublicUrl(filePath);
+  return data.publicUrl;
+}
+
+document.getElementById("profileForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const photoUrl = await uploadProfilePhoto(currentGuest.qr_code, newPhotoData);
+
+  const { error } = await sb
+    .from("guests")
+    .update({
+      full_name: document.getElementById("profileName").value.trim(),
+      phone: document.getElementById("profilePhone").value.trim(),
+      city: document.getElementById("profileCity").value.trim(),
+      photo_url: photoUrl
+    })
+    .eq("qr_code", currentGuest.qr_code);
+
+  if (error) {
+    alert("Hiba mentés közben: " + error.message);
+    return;
+  }
+
+  alert("Adatok sikeresen mentve.");
+});
+</script>
+
+</body>
+</html>
