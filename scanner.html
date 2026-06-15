@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NextBeat - QR beolvasó</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body class="subpage">
+<nav class="navbar">
+  <a href="index.html#home" class="logo-button" title="Főoldal">
+    <img src="assets/nextbeat-logo-color.png" alt="NextBeat logó">
+  </a>
+  <div class="menu">
+    <a href="index.html#home">Főoldal</a>
+    <a href="index.html#regisztracio">Regisztráció</a>
+    <a href="admin.html">Admin</a>
+  </div>
+</nav>
+
+<main class="scanner-wrap">
+  <section class="scanner-card">
+    <p class="label">QR kód beolvasó</p>
+    <h1>Szervezői beléptetés</h1>
+    <p class="lead">Irányítsd a kamerát a vendég QR-kódjára. A rendszer ellenőrzi a regisztrációt.</p>
+
+    <div id="modeBox" class="notice"></div>
+    <div id="reader"></div>
+    <div id="scanResult" class="scan-result waiting">Várakozás QR-kódra...</div>
+    <button id="resetScan" class="btn ghost">Új beolvasás</button>
+  </section>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="config.js"></script>
+<script src="scanner.js"></script>
+</body>
+</html>
