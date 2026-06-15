@@ -1,5 +1,5 @@
 const NEXTBEAT_CONFIG = {
-  eventName: "NextBeat Tropical Sunset Edition",
+  eventName: "NextBeat",
   eventDate: "2026-06-13",
   eventLocation: "Kiskunhalas, Hősök tere 1.",
 
