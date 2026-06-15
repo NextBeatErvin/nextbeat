@@ -176,3 +176,71 @@ document.getElementById("profileForm").addEventListener("submit", async (e) => {
 
 </body>
 </html>
+<h3 style="margin-top:30px;">Rendezvény aktiválás</h3>
+
+<div id="activeEventBox"></div>
+
+<button id="activateEventBtn" class="btn primary full" type="button">
+  Rendezvény aktiválása / QR kód kérése
+</button>
+
+<div id="profileQr" class="qr-box" style="margin-top:20px;"></div>
+let activeEvent = null;
+
+async function loadActiveEvent() {
+  const { data, error } = await sb
+    .from("events")
+    .select("*")
+    .eq("is_active", true)
+    .single();
+
+  const box = document.getElementById("activeEventBox");
+  const btn = document.getElementById("activateEventBtn");
+
+  if (error || !data) {
+    box.innerHTML = "<p>Jelenleg nincs aktív rendezvény.</p>";
+    btn.style.display = "none";
+    return;
+  }
+
+  activeEvent = data;
+  box.innerHTML = `<p>Aktív rendezvény: <strong>${data.event_name}</strong></p>`;
+  btn.style.display = "block";
+}
+
+document.getElementById("activateEventBtn").addEventListener("click", async () => {
+  if (!currentGuest || !activeEvent) return;
+
+  const newQrCode =
+    "NB-" +
+    activeEvent.id +
+    "-" +
+    crypto.randomUUID();
+
+  const { error } = await sb
+    .from("guests")
+    .update({
+      active_event: activeEvent.event_name,
+      event_qr_code: newQrCode,
+      event_qr_used: false,
+      event_qr_used_at: null
+    })
+    .eq("email", currentGuest.email);
+
+  if (error) {
+    alert("Hiba az aktiválásnál: " + error.message);
+    return;
+  }
+
+  currentGuest.event_qr_code = newQrCode;
+
+  document.getElementById("profileQr").innerHTML = "";
+
+  new QRCode(document.getElementById("profileQr"), {
+    text: newQrCode,
+    width: 230,
+    height: 230
+  });
+
+  alert("QR kód sikeresen aktiválva az aktuális rendezvényre.");
+});
