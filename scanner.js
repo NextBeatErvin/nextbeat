@@ -12,7 +12,7 @@ function showResult(type,html){resultBox.className="scan-result "+type;resultBox
 
 async function checkGuest(qrCode){
   if(sb){
-    const {data,error}=await sb.from("guests").select("*").eq("qr_code",qrCode).single();
+    const {data,error}=await sb.from("guests").select("*").eq("event_qr_code", qrCode).single();
     if(error || !data) return {found:false};
     if(data.status==="used") return {found:true,used:true,guest:data};
     const {error:updateError}=await sb.from("guests").update({status:"used",used_at:new Date().toISOString()}).eq("qr_code",qrCode);
