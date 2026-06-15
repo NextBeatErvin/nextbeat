@@ -46,18 +46,20 @@ async function uploadPhoto(qrCode, photoBase64){
 form.addEventListener("submit", async (event)=>{
   event.preventDefault();
   const qrCode="NB-"+crypto.randomUUID();
-  const guest={
-    qr_code: qrCode,
-    event_name: NEXTBEAT_CONFIG.eventName,
-    full_name: document.getElementById("fullName").value.trim(),
-    phone: document.getElementById("phone").value.trim(),
-    email: document.getElementById("email").value.trim(),
-    city: document.getElementById("city").value.trim(),
-    photo_url: photoData,
-    password_hash: await hashPassword(document.getElementById("password").value),
-    status: "registered",
-    used_at: null
-  };
+  const guest = {
+  event_name: "account",
+  full_name: document.getElementById("fullName").value.trim(),
+  phone: document.getElementById("phone").value.trim(),
+  email: document.getElementById("email").value.trim(),
+  city: document.getElementById("city").value.trim(),
+  photo_url: photoData,
+  password_hash: await hashPassword(document.getElementById("password").value),
+  active_event: null,
+  event_qr_code: null,
+  event_qr_used: false,
+  event_qr_used_at: null
+};
+    
 
   try{
     if(sb){
