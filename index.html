@@ -6,6 +6,7 @@
   <title>NextBeat - Festival Party Radio</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
 <header id="home" class="hero">
   <nav class="navbar">
@@ -18,48 +19,62 @@
       <a href="index.html#programok">Programok</a>
       <a href="index.html#fellepok">Fellépők</a>
       <a href="index.html#regisztracio">Regisztráció</a>
+      <a href="profile.html">Bejelentkezés</a>
       <a href="scanner.html">QR beolvasó</a>
       <a href="admin.html">Admin</a>
     </div>
 
     <a class="btn primary small-btn" href="#regisztracio">Regisztrálok</a>
-    
   </nav>
-
-  <div class="hero-overlay"></div>
 
   <div class="hero-content">
     <img class="hero-logo" src="assets/nextbeat-logo-color.png" alt="NextBeat">
     <h1>Zene. Élmény. Közösség.</h1>
     <p>A NextBeat több mint egy rendezvény. Ez egy életérzés.</p>
+
     <div class="buttons">
       <a class="btn ghost" href="#programok">Programok</a>
-      <a class="btn primary" href="#regisztracio">Regisztrálok</a>
+      <a class="btn primary" href="#regisztracio">Regisztráció</a>
+      <a class="btn ghost" href="profile.html">Bejelentkezés</a>
     </div>
   </div>
 </header>
 
 <main>
   <section class="stats-row">
-    <div class="stat-card"><span>2026.06.13</span><p>Dátum</p></div>
-    <div class="stat-card"><span>Kiskunhalas</span><p>Helyszín</p></div>
-    <div class="stat-card"><span>QR belépő</span><p>Regisztráció</p></div>
+    <div class="stat-card">
+      <span>2026.06.13</span>
+      <p>Dátum</p>
+    </div>
+
+    <div class="stat-card">
+      <span>Kiskunhalas</span>
+      <p>Helyszín</p>
+    </div>
+
+    <div class="stat-card">
+      <span>Fiók + QR</span>
+      <p>Aktív rendezvénynél</p>
+    </div>
   </section>
 
   <section id="programok" class="section">
     <p class="label">Programok</p>
     <h2>Az este menetrendje</h2>
+
     <div class="program-grid">
       <div class="program-card">
         <span>18:00 - 20:00</span>
         <h3>Sunset warm-up</h3>
         <p>Érkezés, hangolódás, laza zenei indítás.</p>
       </div>
+
       <div class="program-card active">
         <span>20:00 - 23:00</span>
         <h3>Main party</h3>
         <p>Fények, zene, energia, igazi NextBeat hangulat.</p>
       </div>
+
       <div class="program-card">
         <span>23:00 - zárás</span>
         <h3>Club session</h3>
@@ -72,6 +87,7 @@
     <p class="label">Fellépők</p>
     <h2>Fellépők helye</h2>
     <p class="lead">Ide később be tudjuk rakni a DJ-ket, fellépőket, képeket, időpontokat.</p>
+
     <div class="artist-grid">
       <div>DJ / Fellépő 1</div>
       <div>DJ / Fellépő 2</div>
@@ -83,13 +99,11 @@
     <div class="section-head">
       <div>
         <p class="label">Regisztráció</p>
-        <h2>Vendég regisztráció QR-kóddal</h2>
-      </div>
-      <div class="steps">
-        <span class="on">1 Fotó</span>
-        <span>2 Adatok</span>
-        <span>3 QR kód</span>
-        <span>4 Kész</span>
+        <h2>Vendég fiók létrehozása</h2>
+        <p class="lead">
+          Itt csak egy saját NextBeat fiókot hozol létre. QR-kód csak akkor készül,
+          amikor van aktív rendezvény, és belépés után rányomsz az aktiválás gombra.
+        </p>
       </div>
     </div>
 
@@ -97,10 +111,10 @@
 
     <div class="register-grid">
       <form id="registrationForm" class="form-card">
-        <h3>Adatok</h3>
+        <h3>Fiók adatai</h3>
 
         <label>Profilkép / selfie</label>
-        <input id="photoInput" type="file" accept="image/*" capture="user"  />
+        <input id="photoInput" type="file" accept="image/*" capture="user" />
         <img id="photoPreview" class="photo-preview" alt="Profilkép előnézet" />
 
         <label>Teljes név</label>
@@ -123,53 +137,16 @@
           Elfogadom, hogy az adataimat a rendezvény regisztrációjához kezelik.
         </label>
 
-        <button class="btn primary full" type="submit">Tovább / QR generálás</button>
-        
+        <button class="btn primary full" type="submit">
+          Fiók létrehozása
+        </button>
+
         <a href="profile.html"
-           class="btn primary full"
+           class="btn ghost full"
            style="display:block;text-align:center;margin-top:10px;text-decoration:none;">
-           BEJELENTKEZÉS
+          Bejelentkezés meglévő fiókkal
         </a>
       </form>
-      <hr style="margin:40px 0;">
-
-<h2>Belépés meglévő regisztrációval</h2>
-
-<form id="loginForm">
-
-  <label>E-mail cím</label>
-  <input
-    id="loginEmail"
-    type="email"
-    required
-    placeholder="email@pelda.hu"
-  />
-
-  <label>Jelszó</label>
-  <input
-    id="loginPassword"
-    type="password"
-    required
-    placeholder="Jelszó"
-  />
-
-  <button
-    class="main-cta full"
-    type="submit">
-    Belépés
-  </button>
-
-</form>
-
-      <div id="ticketCard" class="ticket-card hidden">
-        <h3>A te QR kódod</h3>
-        <p>Mutasd be a belépéskor!</p>
-        <img id="ticketPhoto" class="ticket-photo" alt="Vendég profilképe" />
-        <h4 id="ticketName"></h4>
-        <div id="qrcode" class="qr-box"></div>
-        <p id="ticketMeta" class="ticket-meta"></p>
-        <button id="printTicket" class="btn ghost full">Mentés / nyomtatás PDF-be</button>
-      </div>
     </div>
   </section>
 </main>
@@ -182,7 +159,6 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
 </body>
