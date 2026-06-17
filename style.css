@@ -33,18 +33,33 @@ body::before {
 body::after {
   content: "";
   position: fixed;
-  inset: -50%;
+  inset: 0;
   z-index: -2;
   pointer-events: none;
+
   background:
-    repeating-linear-gradient(
-      45deg,
-      rgba(255, 0, 230, 0.04),
-      rgba(255, 0, 230, 0.04) 30px,
-      rgba(0, 170, 255, 0.04) 30px,
-      rgba(0, 170, 255, 0.04) 60px
-    );
-  animation: discoRotate 35s linear infinite;
+    radial-gradient(circle at 15% 20%, rgba(255,0,230,0.15), transparent 25%),
+    radial-gradient(circle at 80% 25%, rgba(0,170,255,0.15), transparent 25%),
+    radial-gradient(circle at 50% 75%, rgba(140,0,255,0.12), transparent 30%);
+
+  animation: discoGlow 10s ease-in-out infinite alternate;
+}
+
+@keyframes discoGlow {
+  0% {
+    transform: scale(1);
+    opacity: .6;
+  }
+
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: .7;
+  }
 }
 
 @keyframes discoBackground {
