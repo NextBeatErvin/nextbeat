@@ -348,8 +348,44 @@ footer {
 }
 
 .footer-logo img {
-  height: 80px;
+  height: 140px;
+  max-width: 90%;
   margin-bottom: 12px;
+}
+
+/* JOBB OLDALI VISSZA A TETEJÉRE NYÍL */
+
+#scrollTopBtn {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 58px;
+  height: 58px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f706df, #1db6ff);
+  color: #ffffff;
+  font-size: 34px;
+  font-weight: 900;
+  cursor: pointer;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+  transition: 0.3s ease;
+  box-shadow:
+    0 0 20px rgba(247,6,223,0.6),
+    0 0 25px rgba(29,182,255,0.45);
+}
+
+#scrollTopBtn.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+#scrollTopBtn:hover {
+  transform: scale(1.1);
 }
 
 /* MOBIL JAVÍTVA */
@@ -416,5 +452,13 @@ footer {
 
   .form-card {
     padding: 24px;
+  }
+
+  #scrollTopBtn {
+    right: 16px;
+    bottom: 16px;
+    width: 52px;
+    height: 52px;
+    font-size: 30px;
   }
 }
