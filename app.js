@@ -76,16 +76,26 @@ async function uploadPhoto(email, photoBase64) {
 
 async function sendRegistrationEmail(email, fullName) {
   try {
-    await fetch(EMAIL_FUNCTION_URL, {
+    const response = await fetch(EMAIL_FUNCTION_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${NEXTBEAT_CONFIG.SUPABASE_ANON_KEY}`
       },
       body: JSON.stringify({
         email: email,
         name: fullName
       })
     });
+
+    const result = await response.json();
+
+    console.log("Email válasz:", result);
+
+    if (!response.ok) {
+      console.warn("Email küldési hiba:", result);
+    }
+
   } catch (err) {
     console.warn("Email küldési hiba:", err.message);
   }
