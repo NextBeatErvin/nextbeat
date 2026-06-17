@@ -1,77 +1,188 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>NextBeat - Admin</title>
-  <link rel="stylesheet" href="style.css" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NextBeat Admin</title>
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+body{
+    font-family:Arial,Helvetica,sans-serif;
+    background:#050510;
+    color:white;
+}
+.header{
+    padding:25px;
+    text-align:center;
+    background:#0d1020;
+    border-bottom:1px solid #24244a;
+}
+.header h1{
+    font-size:40px;
+}
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:30px;
+}
+.card{
+    background:#101526;
+    border:1px solid #2a3155;
+    border-radius:15px;
+    padding:25px;
+    margin-bottom:20px;
+}
+.card h2{
+    margin-bottom:15px;
+}
+.btn{
+    background:linear-gradient(90deg,#ff00ff,#00aaff);
+    color:white;
+    border:none;
+    padding:15px 25px;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:bold;
+}
+.btn:hover{
+    opacity:.9;
+}
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+table th,
+table td{
+    border:1px solid #2a3155;
+    padding:10px;
+    text-align:left;
+}
+table th{
+    background:#141d36;
+}
+img{
+    width:60px;
+    height:60px;
+    object-fit:cover;
+    border-radius:8px;
+}
+</style>
 </head>
-<body class="subpage">
-<nav class="navbar">
-  <a href="index.html#home" class="logo-button" title="Főoldal">
-    <img src="assets/nextbeat-logo-color.png" alt="NextBeat logó">
-  </a>
-  <div class="menu">
-    <a href="index.html#home">Főoldal</a>
-    <a href="scanner.html">QR beolvasó</a>
-    <a href="index.html#regisztracio">Regisztráció</a>
-  </div>
-</nav>
-
-<main class="admin-layout">
-  <aside class="sidebar">
-    <img src="assets/nextbeat-logo-white.png" alt="NextBeat">
-    <a class="active" href="#">Vendégek</a>
-    <a href="scanner.html">Beolvasó</a>
-    <a href="#">Statisztikák</a>
-    <a href="#">Export</a>
-    <a href="#">Beállítások</a>
-  </aside>
-
-  <section class="admin-content">
-    <p class="label">Admin</p>
-    <h1>Vendéglista</h1>
-    <div id="modeBox" class="notice"></div>
-
-    <div class="summary-grid">
-      <div><span id="totalCount">0</span><p>Összes regisztrált</p></div>
-      <div><span id="usedCount">0</span><p>Beolvasott</p></div>
-      <div><span id="todayCount">0</span><p>Mai regisztrált</p></div>
-    </div>
-
-    <div class="admin-actions">
-      <button id="loadGuests" class="btn primary">Lista frissítése</button>
-      <button id="exportCsv" class="btn ghost">Export CSV / Excel</button>
-    </div>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Név</th>
-            <th>Telefonszám</th>
-            <th>Város</th>
-            <th>Email</th>
-            <th>Állapot</th>
-          </tr>
-        </thead>
-        <tbody id="guestRows"></tbody>
-      </table>
-    </div>
-  </section>
-</main>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="config.js"></script>
-<script src="admin.js"></script>
-</body>
-</html>
+<body>
 <script>
-const password = prompt("Admin jelszó:");
-
-if (password !== "NextBeat") {
-    alert("Hibás jelszó!");
-    window.location.href = "index.html";
+const adminEmail = prompt("Admin e-mail:");
+const adminName = prompt("Admin név:");
+const adminPassword = prompt("Admin jelszó:");
+if(
+    adminEmail !== "Admin@gmail.com" ||
+    adminName !== "Admin" ||
+    adminPassword !== "Admin"
+){
+    alert("Nincs jogosultság.");
+    location.href="index.html";
 }
 </script>
+<div class="header">
+    <h1>NextBeat Admin Panel</h1>
+</div>
+<div class="container">
+<div class="card">
+    <h2>Rendezvény vezérlés</h2>
+    <button class="btn" onclick="activateEvent()">
+        Rendezvény aktiválása
+    </button>
+    <button class="btn" onclick="deactivateEvent()">
+        Rendezvény leállítása
+    </button>
+</div>
+<div class="card">
+    <h2>QR Beolvasó</h2>
+    <button class="btn"
+        onclick="window.location.href='scanner.html'">
+        QR Scanner megnyitása
+    </button>
+</div>
+<div class="card">
+    <h2>Regisztrált felhasználók</h2>
+    <table id="usersTable">
+        <thead>
+            <tr>
+                <th>Fotó</th>
+                <th>Név</th>
+                <th>Email</th>
+                <th>Telefon</th>
+                <th>Város</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+const sb = getSupabaseClient();
+async function loadUsers(){
+    if(!sb) return;
+    const {data,error} = await sb
+    .from("guests")
+    .select("*")
+    .order("created_at",{ascending:false});
+    if(error){
+        console.log(error);
+        return;
+    }
+    const tbody =
+        document.querySelector("#usersTable tbody");
+    tbody.innerHTML="";
+    data.forEach(user=>{
+        tbody.innerHTML += `
+        <tr>
+            <td>
+                <img src="${user.photo_url || ''}">
+            </td>
+            <td>${user.full_name || ''}</td>
+            <td>${user.email || ''}</td>
+            <td>${user.phone || ''}</td>
+            <td>${user.city || ''}</td>
+        </tr>
+        `;
+    });
+}
+async function activateEvent(){
+    if(!sb) return;
+    const eventName =
+    prompt("Rendezvény neve:");
+    if(!eventName) return;
+    const {error} = await sb
+    .from("events")
+    .insert([{
+        event_name:eventName,
+        is_active:true
+    }]);
+    if(error){
+        alert(error.message);
+        return;
+    }
+    alert("Rendezvény aktiválva.");
+}
+async function deactivateEvent(){
+    if(!sb) return;
+    const {error} = await sb
+    .from("events")
+    .update({is_active:false})
+    .eq("is_active",true);
+    if(error){
+        alert(error.message);
+        return;
+    }
+    alert("Rendezvény leállítva.");
+}
+loadUsers();
+</script>
+</body>
+</html>
