@@ -47,9 +47,6 @@ a {
 
 .logo-button:hover img {
   transform: scale(1.05);
-  filter:
-    drop-shadow(0 0 18px #ff00e6)
-    drop-shadow(0 0 16px #00aaff);
 }
 
 .menu {
@@ -61,12 +58,7 @@ a {
   font-weight: 800;
 }
 
-.menu a {
-  opacity: 0.85;
-}
-
 .menu a:hover {
-  opacity: 1;
   color: #ff2bea;
 }
 
@@ -80,7 +72,6 @@ a {
 .hero-logo {
   width: min(620px, 88vw);
   margin-bottom: 25px;
-  filter: drop-shadow(0 0 30px rgba(247, 6, 223, 0.55));
 }
 
 .hero-content h1 {
@@ -113,19 +104,13 @@ a {
   cursor: pointer;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
   font-size: 14px;
   transition: 0.25s;
-}
-
-.btn:hover {
-  transform: scale(1.03);
 }
 
 .primary {
   background: linear-gradient(90deg, #f706df, #1db6ff);
   color: #ffffff;
-  box-shadow: 0 0 22px rgba(247, 6, 223, 0.35);
 }
 
 .ghost {
@@ -143,10 +128,7 @@ a {
   padding: 13px 22px;
 }
 
-/* NAGY FŐ GOMBOK */
-
 .auth-buttons-section {
-  width: 100%;
   max-width: 1200px;
   margin: 40px auto;
   padding: 0 24px;
@@ -160,32 +142,17 @@ a {
   align-items: center;
   justify-content: center;
   min-height: 120px;
-
   background: linear-gradient(135deg, #42106d, #09111f);
   border: 1px solid #8f2fff;
-
   color: #ffffff;
-  text-decoration: none;
-
   font-size: clamp(30px, 5vw, 58px);
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 1px;
-
-  box-shadow: 0 0 22px rgba(170, 0, 255, 0.25);
-  transition: 0.3s;
-}
-
-.auth-big-btn:hover {
-  transform: scale(1.02);
-  box-shadow: 0 0 35px rgba(170, 0, 255, 0.55);
 }
 
 .auth-big-btn.login {
   background: linear-gradient(135deg, #09111f, #0f1f3d);
 }
-
-/* STAT KÁRTYÁK */
 
 .stats-row {
   max-width: 1180px;
@@ -196,11 +163,19 @@ a {
   gap: 18px;
 }
 
-.stat-card {
-  background: linear-gradient(180deg, rgba(18,18,42,0.86), rgba(5,5,18,0.95));
+.stat-card,
+.program-card,
+.form-card,
+.ticket-card,
+.scanner-card,
+.admin-card {
+  background: linear-gradient(180deg, rgba(18,18,42,0.9), rgba(5,5,18,0.98));
   border: 1px solid rgba(119,57,255,0.32);
+  border-radius: 24px;
+}
+
+.stat-card {
   padding: 26px;
-  border-radius: 20px;
   text-align: center;
 }
 
@@ -208,15 +183,11 @@ a {
   display: block;
   font-size: 24px;
   font-weight: 900;
-  color: #ffffff;
 }
 
 .stat-card p {
   color: #aeb3d8;
-  margin-top: 6px;
 }
-
-/* SZEKCIÓK */
 
 .section {
   max-width: 1180px;
@@ -254,15 +225,11 @@ a {
 }
 
 .program-card {
-  background: linear-gradient(180deg, rgba(18,18,42,0.86), rgba(5,5,18,0.96));
-  border: 1px solid rgba(119,57,255,0.32);
   padding: 26px;
-  border-radius: 20px;
 }
 
 .program-card.active {
   border-color: #ff2bea;
-  box-shadow: 0 0 34px rgba(255, 0, 230, 0.18);
 }
 
 .program-card span {
@@ -296,25 +263,12 @@ a {
   font-weight: 900;
 }
 
-/* REGISZTRÁCIÓ */
-
-.registration-section {
-  padding-top: 80px;
-}
-
-.section-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-}
-
 .notice {
   margin: 22px 0;
   padding: 18px;
   border-radius: 18px;
   background: rgba(255,191,79,0.12);
   border: 1px solid rgba(255,191,79,0.28);
-  color: #fff3d8;
 }
 
 .register-grid {
@@ -327,11 +281,7 @@ a {
 .form-card {
   max-width: 620px;
   width: 100%;
-  background: linear-gradient(180deg, rgba(18,18,42,0.9), rgba(5,5,18,0.98));
-  border: 1px solid rgba(119,57,255,0.32);
   padding: 30px;
-  border-radius: 24px;
-  box-shadow: 0 0 35px rgba(0,0,0,0.35);
 }
 
 .form-card h3 {
@@ -344,7 +294,6 @@ a {
   display: block;
   margin-top: 16px;
   margin-bottom: 7px;
-  color: #ffffff;
   font-weight: 800;
 }
 
@@ -356,20 +305,12 @@ a {
   background: rgba(0,0,0,0.28);
   color: #ffffff;
   font-size: 16px;
-  outline: none;
-}
-
-.form-card input:focus {
-  border-color: #ff2bea;
-  box-shadow: 0 0 0 3px rgba(255,43,234,0.13);
 }
 
 .checkbox {
   display: flex !important;
   gap: 10px;
   align-items: flex-start;
-  color: #cfd2ef !important;
-  font-weight: 600 !important;
 }
 
 .checkbox input {
@@ -387,17 +328,6 @@ a {
   border: 2px solid #ff2bea;
 }
 
-/* QR / PROFIL KÖZÖS ELEMEK */
-
-.ticket-card,
-.scanner-card,
-.admin-card {
-  background: linear-gradient(180deg, rgba(18,18,42,0.9), rgba(5,5,18,0.98));
-  border: 1px solid rgba(119,57,255,0.32);
-  padding: 30px;
-  border-radius: 24px;
-}
-
 .qr-box {
   display: inline-block;
   background: #ffffff;
@@ -410,36 +340,59 @@ a {
   display: none !important;
 }
 
-/* FOOTER */
-
 footer {
   text-align: center;
   padding: 48px 20px;
-  border-top: 1px solid rgba(255,255,255,0.08);
   background: #020208;
   color: #a5a9cc;
 }
 
 .footer-logo img {
   height: 80px;
-  opacity: 0.85;
   margin-bottom: 12px;
 }
 
-/* MOBIL */
+/* MOBIL JAVÍTVA */
 
 @media (max-width: 900px) {
   .navbar {
     flex-direction: column;
     align-items: flex-start;
+    padding: 18px;
+  }
+
+  .logo-button img {
+    height: 62px;
   }
 
   .menu {
-    gap: 12px;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .menu a {
+    display: block;
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
   }
 
   .small-btn {
-    display: none;
+    display: inline-flex;
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .buttons {
+    flex-direction: column;
+  }
+
+  .buttons .btn {
+    width: 100%;
   }
 
   .stats-row,
@@ -449,7 +402,7 @@ footer {
   }
 
   .hero-content {
-    padding-top: 50px;
+    padding-top: 45px;
   }
 
   .auth-big-btn {
