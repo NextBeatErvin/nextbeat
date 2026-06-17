@@ -6,23 +6,24 @@
   <title>NextBeat - Profil</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <nav class="navbar">
   <a href="index.html" class="logo-button">
     <img src="assets/nextbeat-logo-color.png" alt="NextBeat">
   </a>
+
   <div class="menu">
     <a href="index.html">Főoldal</a>
     <a href="profile.html">Bejelentkezés</a>
-    <a href="scanner.html">QR beolvasó</a>
-    <a href="admin.html">Admin</a>
   </div>
 </nav>
 
 <main class="section">
+
   <p class="label">Profil</p>
-  <h2>Bejelentkezés / adatmódosítás</h2>
+  <h2>Bejelentkezés</h2>
 
   <form id="loginProfileForm" class="form-card">
     <label>Email cím</label>
@@ -31,7 +32,9 @@
     <label>Jelszó</label>
     <input id="loginPassword" type="password" required>
 
-    <button class="btn primary full" type="submit">Belépés</button>
+    <button class="btn primary full" type="submit">
+      Belépés
+    </button>
   </form>
 
   <form id="profileForm" class="form-card hidden">
@@ -53,11 +56,33 @@
     <label>Város</label>
     <input id="profileCity" type="text" required>
 
-    <button class="btn primary full" type="submit">Adatok mentése</button>
+    <button class="btn primary full" type="submit">
+      Adatok mentése
+    </button>
+
+    <h3 style="margin-top:30px;">Rendezvény aktiválás</h3>
+
+    <div id="activeEventBox" class="notice">
+      Rendezvény keresése...
+    </div>
+
+    <button id="activateEventBtn"
+            class="btn primary full"
+            type="button"
+            style="display:none;">
+      Rendezvény aktiválása / QR kód kérése
+    </button>
 
     <h3 style="margin-top:30px;">Saját QR-kód</h3>
-    <div id="profileQr" class="qr-box"></div>
+    <div id="profileQr" class="qr-box" style="display:none;"></div>
+
+    <button id="logoutBtn"
+            class="btn ghost full"
+            type="button">
+      Kijelentkezés
+    </button>
   </form>
+
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -66,181 +91,277 @@
 
 <script>
 const sb = getSupabaseClient();
+
 let currentGuest = null;
 let newPhotoData = "";
+let activeEvent = null;
 
 async function hashPassword(password) {
   const encoder = new TextEncoder();
   const data = encoder.encode(password);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
   return Array.from(new Uint8Array(hashBuffer))
     .map(b => b.toString(16).padStart(2, "0"))
     .join("");
 }
 
-document.getElementById("loginProfileForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+document
+  .getElementById("loginProfileForm")
+  .addEventListener("submit", async (e) => {
 
-  const email = document.getElementById("loginEmail").value.trim();
-  const password = document.getElementById("loginPassword").value;
-  const passwordHash = await hashPassword(password);
+    e.preventDefault();
 
-  const { data, error } = await sb
-    .from("guests")
-    .select("*")
-    .eq("email", email)
-    .single();
+    const email =
+      document.getElementById("loginEmail").value.trim();
 
-  if (error || !data) {
-    alert("Nincs ilyen regisztráció.");
-    return;
-  }
+    const password =
+      document.getElementById("loginPassword").value;
 
-  if (data.password_hash !== passwordHash) {
-    alert("Hibás jelszó.");
-    return;
-  }
+    const passwordHash =
+      await hashPassword(password);
 
-  currentGuest = data;
+    const { data, error } = await sb
+      .from("guests")
+      .select("*")
+      .eq("email", email)
+      .single();
 
-  document.getElementById("profileName").value = data.full_name;
-  document.getElementById("profilePhone").value = data.phone;
-  document.getElementById("profileEmail").value = data.email;
-  document.getElementById("profileCity").value = data.city;
-  document.getElementById("profilePreview").src = data.photo_url || "";
+    if (error || !data) {
+      alert("Nincs ilyen regisztráció.");
+      return;
+    }
 
-  document.getElementById("loginProfileForm").classList.add("hidden");
-  document.getElementById("profileForm").classList.remove("hidden");
+    if (data.password_hash !== passwordHash) {
+      alert("Hibás jelszó.");
+      return;
+    }
 
-  document.getElementById("profileQr").innerHTML = "";
-  new QRCode(document.getElementById("profileQr"), {
-    text: data.qr_code,
-    width: 230,
-    height: 230
+    localStorage.setItem("nextbeat_logged_email", data.email);
+    localStorage.setItem("nextbeat_logged_role", data.role || "user");
+
+    if (data.role === "admin") {
+      window.location.href = "admin.html";
+      return;
+    }
+
+    currentGuest = data;
+
+    showUserProfile(data);
+    await loadActiveEvent();
   });
-});
 
-document.getElementById("profilePhoto").addEventListener("change", () => {
-  const file = document.getElementById("profilePhoto").files[0];
-  if (!file) return;
+function showUserProfile(data) {
+  document.getElementById("profileName").value =
+    data.full_name || "";
 
-  const reader = new FileReader();
-  reader.onload = (event) => {
-    newPhotoData = event.target.result;
-    document.getElementById("profilePreview").src = newPhotoData;
-  };
-  reader.readAsDataURL(file);
-});
+  document.getElementById("profilePhone").value =
+    data.phone || "";
 
-async function uploadProfilePhoto(qrCode, photoBase64) {
-  if (!photoBase64) return currentGuest.photo_url;
+  document.getElementById("profileEmail").value =
+    data.email || "";
 
-  const response = await fetch(photoBase64);
-  const blob = await response.blob();
-  const filePath = `${qrCode}.jpg`;
+  document.getElementById("profileCity").value =
+    data.city || "";
 
-  await sb.storage
+  document.getElementById("profilePreview").src =
+    data.photo_url || "";
+
+  document
+    .getElementById("loginProfileForm")
+    .classList.add("hidden");
+
+  document
+    .getElementById("profileForm")
+    .classList.remove("hidden");
+
+  if (data.event_qr_code) {
+    showQrCode(data.event_qr_code);
+  }
+}
+
+document
+  .getElementById("profilePhoto")
+  .addEventListener("change", () => {
+
+    const file =
+      document.getElementById("profilePhoto").files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      newPhotoData = event.target.result;
+      document.getElementById("profilePreview").src =
+        newPhotoData;
+    };
+
+    reader.readAsDataURL(file);
+  });
+
+async function uploadProfilePhoto(email, photoBase64) {
+  if (!photoBase64) {
+    return currentGuest.photo_url;
+  }
+
+  const response =
+    await fetch(photoBase64);
+
+  const blob =
+    await response.blob();
+
+  const filePath =
+    email.replace(/[^a-zA-Z0-9]/g, "_") +
+    "_" +
+    Date.now() +
+    ".jpg";
+
+  const { error } = await sb.storage
     .from("guest-photos")
     .upload(filePath, blob, {
       contentType: "image/jpeg",
       upsert: true
     });
 
-  const { data } = sb.storage.from("guest-photos").getPublicUrl(filePath);
+  if (error) {
+    throw error;
+  }
+
+  const { data } =
+    sb.storage
+      .from("guest-photos")
+      .getPublicUrl(filePath);
+
   return data.publicUrl;
 }
 
-document.getElementById("profileForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
+document
+  .getElementById("profileForm")
+  .addEventListener("submit", async (e) => {
 
-  const photoUrl = await uploadProfilePhoto(currentGuest.qr_code, newPhotoData);
+    e.preventDefault();
 
-  const { error } = await sb
-    .from("guests")
-    .update({
-      full_name: document.getElementById("profileName").value.trim(),
-      phone: document.getElementById("profilePhone").value.trim(),
-      city: document.getElementById("profileCity").value.trim(),
-      photo_url: photoUrl
-    })
-    .eq("qr_code", currentGuest.qr_code);
+    const photoUrl =
+      await uploadProfilePhoto(
+        currentGuest.email,
+        newPhotoData
+      );
 
-  if (error) {
-    alert("Hiba mentés közben: " + error.message);
-    return;
-  }
+    const { error } = await sb
+      .from("guests")
+      .update({
+        full_name:
+          document.getElementById("profileName").value.trim(),
 
-  alert("Adatok sikeresen mentve.");
-});
-</script>
+        phone:
+          document.getElementById("profilePhone").value.trim(),
 
-</body>
-</html>
-<h3 style="margin-top:30px;">Rendezvény aktiválás</h3>
+        city:
+          document.getElementById("profileCity").value.trim(),
 
-<div id="activeEventBox"></div>
+        photo_url:
+          photoUrl
+      })
+      .eq("email", currentGuest.email);
 
-<button id="activateEventBtn" class="btn primary full" type="button">
-  Rendezvény aktiválása / QR kód kérése
-</button>
+    if (error) {
+      alert("Hiba mentés közben: " + error.message);
+      return;
+    }
 
-<div id="profileQr" class="qr-box" style="margin-top:20px;"></div>
-let activeEvent = null;
+    alert("Adatok sikeresen mentve.");
+  });
 
 async function loadActiveEvent() {
+
   const { data, error } = await sb
     .from("events")
     .select("*")
     .eq("is_active", true)
     .single();
 
-  const box = document.getElementById("activeEventBox");
-  const btn = document.getElementById("activateEventBtn");
+  const box =
+    document.getElementById("activeEventBox");
+
+  const btn =
+    document.getElementById("activateEventBtn");
 
   if (error || !data) {
-    box.innerHTML = "<p>Jelenleg nincs aktív rendezvény.</p>";
+    box.innerHTML =
+      "Jelenleg nincs aktív rendezvény.";
+
     btn.style.display = "none";
     return;
   }
 
   activeEvent = data;
-  box.innerHTML = `<p>Aktív rendezvény: <strong>${data.event_name}</strong></p>`;
+
+  box.innerHTML =
+    "Aktív rendezvény: <strong>" +
+    data.event_name +
+    "</strong>";
+
   btn.style.display = "block";
 }
 
-document.getElementById("activateEventBtn").addEventListener("click", async () => {
-  if (!currentGuest || !activeEvent) return;
+document
+  .getElementById("activateEventBtn")
+  .addEventListener("click", async () => {
 
-  const newQrCode =
-    "NB-" +
-    activeEvent.id +
-    "-" +
-    crypto.randomUUID();
+    if (!currentGuest || !activeEvent) return;
 
-  const { error } = await sb
-    .from("guests")
-    .update({
-      active_event: activeEvent.event_name,
-      event_qr_code: newQrCode,
-      event_qr_used: false,
-      event_qr_used_at: null
-    })
-    .eq("email", currentGuest.email);
+    const newQrCode =
+      "NB-" +
+      activeEvent.id +
+      "-" +
+      crypto.randomUUID();
 
-  if (error) {
-    alert("Hiba az aktiválásnál: " + error.message);
-    return;
-  }
+    const { error } = await sb
+      .from("guests")
+      .update({
+        active_event: activeEvent.event_name,
+        event_qr_code: newQrCode,
+        event_qr_used: false,
+        event_qr_used_at: null
+      })
+      .eq("email", currentGuest.email);
 
-  currentGuest.event_qr_code = newQrCode;
+    if (error) {
+      alert("Hiba az aktiválásnál: " + error.message);
+      return;
+    }
 
-  document.getElementById("profileQr").innerHTML = "";
+    currentGuest.event_qr_code = newQrCode;
+    currentGuest.event_qr_used = false;
 
-  new QRCode(document.getElementById("profileQr"), {
-    text: newQrCode,
+    showQrCode(newQrCode);
+
+    alert("QR kód sikeresen aktiválva az aktuális rendezvényre.");
+  });
+
+function showQrCode(qrCode) {
+  const qrBox =
+    document.getElementById("profileQr");
+
+  qrBox.innerHTML = "";
+  qrBox.style.display = "inline-block";
+
+  new QRCode(qrBox, {
+    text: qrCode,
     width: 230,
     height: 230
   });
+}
 
-  alert("QR kód sikeresen aktiválva az aktuális rendezvényre.");
-});
+document
+  .getElementById("logoutBtn")
+  .addEventListener("click", () => {
+    localStorage.removeItem("nextbeat_logged_email");
+    localStorage.removeItem("nextbeat_logged_role");
+    window.location.href = "index.html";
+  });
+</script>
+
+</body>
+</html>
