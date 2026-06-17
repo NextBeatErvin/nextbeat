@@ -19,20 +19,26 @@
       <a href="index.html#home">Főoldal</a>
       <a href="index.html#programok">Programok</a>
       <a href="index.html#fellepok">Fellépők</a>
+      <a href="index.html#regisztracio">Regisztráció</a>
     </div>
 
     <a class="btn primary small-btn" href="profile.html">Bejelentkezés</a>
-    </div>
-</div>
-    <a class="btn primary small-btn" href="#regisztracio">Regisztrálok</a>
-  </div>
-</div>
   </nav>
 
   <div class="hero-content">
     <img class="hero-logo" src="assets/nextbeat-logo-color.png" alt="NextBeat">
     <h1>Zene. Élmény. Közösség.</h1>
     <p>A NextBeat több mint egy rendezvény. Ez egy életérzés.</p>
+
+    <div class="buttons">
+      <a class="btn ghost" href="#programok">Programok</a>
+      <a class="btn primary" href="#regisztracio">Regisztrálok</a>
+      <a class="btn ghost" href="profile.html">Bejelentkezés</a>
+    </div>
+  </div>
+</header>
+
+<main>
 
   <section class="stats-row">
     <div class="stat-card">
@@ -58,19 +64,19 @@
     <div class="program-grid">
       <div class="program-card">
         <span>Nyitás - 20:00</span>
-        <h3></h3>
+        <h3>Érkezés</h3>
         <p>Érkezés, hangolódás, laza zenei indítás.</p>
       </div>
 
       <div class="program-card active">
-        <span></span>
-        <h3></h3>
+        <span>20:00 - 02:00</span>
+        <h3>Main party</h3>
         <p>Fények, zene, energia, igazi NextBeat hangulat.</p>
       </div>
 
       <div class="program-card">
         <span>02:00 - zárás</span>
-        <h3></h3>
+        <h3>After session</h3>
         <p>Éjszakai ütemek és lendületes zárás.</p>
       </div>
     </div>
@@ -154,11 +160,11 @@
   </p>
 </footer>
 
+<button id="scrollTopBtn">↑</button>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
 <script src="app.js"></script>
-
-<button id="scrollTopBtn">↑</button>
 
 <script>
 const scrollBtn = document.getElementById("scrollTopBtn");
@@ -178,5 +184,6 @@ scrollBtn.addEventListener("click", () => {
   });
 });
 </script>
+
 </body>
 </html>
