@@ -4,31 +4,37 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NextBeat Admin</title>
+
 <style>
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
 }
+
 body{
     font-family:Arial,Helvetica,sans-serif;
     background:#050510;
     color:white;
 }
+
 .header{
     padding:25px;
     text-align:center;
     background:#0d1020;
     border-bottom:1px solid #24244a;
 }
+
 .header h1{
     font-size:40px;
 }
+
 .container{
     max-width:1200px;
     margin:auto;
     padding:30px;
 }
+
 .card{
     background:#101526;
     border:1px solid #2a3155;
@@ -36,9 +42,11 @@ body{
     padding:25px;
     margin-bottom:20px;
 }
+
 .card h2{
     margin-bottom:15px;
 }
+
 .btn{
     background:linear-gradient(90deg,#ff00ff,#00aaff);
     color:white;
@@ -47,142 +55,256 @@ body{
     border-radius:10px;
     cursor:pointer;
     font-weight:bold;
+    margin:5px;
 }
+
 .btn:hover{
     opacity:.9;
 }
+
 table{
     width:100%;
     border-collapse:collapse;
 }
+
 table th,
 table td{
     border:1px solid #2a3155;
     padding:10px;
     text-align:left;
 }
+
 table th{
     background:#141d36;
 }
+
 img{
     width:60px;
     height:60px;
     object-fit:cover;
     border-radius:8px;
 }
+
+.status-admin{
+    color:#00ff99;
+    font-weight:bold;
+}
+
+.status-user{
+    color:#00aaff;
+    font-weight:bold;
+}
 </style>
 </head>
+
 <body>
+
 <script>
-const adminEmail = prompt("Admin e-mail:");
-const adminName = prompt("Admin név:");
-const adminPassword = prompt("Admin jelszó:");
-if(
-    adminEmail !== "Admin@gmail.com" ||
-    adminName !== "Admin" ||
-    adminPassword !== "Admin"
-){
-    alert("Nincs jogosultság.");
-    location.href="index.html";
+const loggedRole = localStorage.getItem("nextbeat_logged_role");
+const loggedEmail = localStorage.getItem("nextbeat_logged_email");
+
+if (loggedRole !== "admin" || !loggedEmail) {
+    alert("Nincs admin jogosultságod. Jelentkezz be admin fiókkal.");
+    window.location.href = "profile.html";
 }
 </script>
+
 <div class="header">
     <h1>NextBeat Admin Panel</h1>
 </div>
+
 <div class="container">
-<div class="card">
-    <h2>Rendezvény vezérlés</h2>
-    <button class="btn" onclick="activateEvent()">
-        Rendezvény aktiválása
-    </button>
-    <button class="btn" onclick="deactivateEvent()">
-        Rendezvény leállítása
-    </button>
+
+    <div class="card">
+        <h2>Bejelentkezett admin</h2>
+        <p id="loggedAdminEmail"></p>
+
+        <button class="btn" onclick="logoutAdmin()">
+            Kijelentkezés
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>Rendezvény vezérlés</h2>
+
+        <button class="btn" onclick="activateEvent()">
+            Rendezvény aktiválása
+        </button>
+
+        <button class="btn" onclick="deactivateEvent()">
+            Rendezvény leállítása
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>QR Beolvasó</h2>
+
+        <button class="btn" onclick="window.location.href='scanner.html'">
+            QR Scanner megnyitása
+        </button>
+    </div>
+
+    <div class="card">
+        <h2>Regisztrált felhasználók</h2>
+
+        <table id="usersTable">
+            <thead>
+                <tr>
+                    <th>Fotó</th>
+                    <th>Név</th>
+                    <th>Email</th>
+                    <th>Telefon</th>
+                    <th>Város</th>
+                    <th>Jogosultság</th>
+                    <th>Művelet</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+        </table>
+    </div>
+
 </div>
-<div class="card">
-    <h2>QR Beolvasó</h2>
-    <button class="btn"
-        onclick="window.location.href='scanner.html'">
-        QR Scanner megnyitása
-    </button>
-</div>
-<div class="card">
-    <h2>Regisztrált felhasználók</h2>
-    <table id="usersTable">
-        <thead>
-            <tr>
-                <th>Fotó</th>
-                <th>Név</th>
-                <th>Email</th>
-                <th>Telefon</th>
-                <th>Város</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
-</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="config.js"></script>
+
 <script>
 const sb = getSupabaseClient();
+
+document.getElementById("loggedAdminEmail").innerText =
+    "Admin fiók: " + localStorage.getItem("nextbeat_logged_email");
+
+function logoutAdmin(){
+    localStorage.removeItem("nextbeat_logged_email");
+    localStorage.removeItem("nextbeat_logged_role");
+    window.location.href = "profile.html";
+}
+
 async function loadUsers(){
-    if(!sb) return;
-    const {data,error} = await sb
-    .from("guests")
-    .select("*")
-    .order("created_at",{ascending:false});
-    if(error){
-        console.log(error);
+
+    if(!sb){
+        alert("Nincs Supabase kapcsolat.");
         return;
     }
+
+    const {data,error} = await sb
+        .from("guests")
+        .select("*")
+        .order("created_at",{ascending:false});
+
+    if(error){
+        alert("Felhasználók betöltési hiba: " + error.message);
+        return;
+    }
+
     const tbody =
         document.querySelector("#usersTable tbody");
-    tbody.innerHTML="";
-    data.forEach(user=>{
+
+    tbody.innerHTML = "";
+
+    data.forEach(user => {
+
+        const roleText =
+            user.role === "admin"
+            ? "<span class='status-admin'>admin</span>"
+            : "<span class='status-user'>user</span>";
+
+        const actionButton =
+            user.role === "admin"
+            ? `<button class="btn" onclick="setUserRole('${user.email}', 'user')">Admin levétele</button>`
+            : `<button class="btn" onclick="setUserRole('${user.email}', 'admin')">Adminná tesz</button>`;
+
         tbody.innerHTML += `
         <tr>
             <td>
                 <img src="${user.photo_url || ''}">
             </td>
+
             <td>${user.full_name || ''}</td>
+
             <td>${user.email || ''}</td>
+
             <td>${user.phone || ''}</td>
+
             <td>${user.city || ''}</td>
+
+            <td>${roleText}</td>
+
+            <td>${actionButton}</td>
         </tr>
         `;
     });
 }
-async function activateEvent(){
-    if(!sb) return;
-    const eventName =
-    prompt("Rendezvény neve:");
-    if(!eventName) return;
-    const {error} = await sb
-    .from("events")
-    .insert([{
-        event_name:eventName,
-        is_active:true
-    }]);
-    if(error){
-        alert(error.message);
+
+async function setUserRole(email, role){
+
+    if(!confirm("Biztosan módosítod a jogosultságot?")){
         return;
     }
+
+    const {error} = await sb
+        .from("guests")
+        .update({ role: role })
+        .eq("email", email);
+
+    if(error){
+        alert("Jogosultság módosítási hiba: " + error.message);
+        return;
+    }
+
+    alert("Jogosultság módosítva.");
+    loadUsers();
+}
+
+async function activateEvent(){
+
+    if(!sb) return;
+
+    const eventName =
+        prompt("Rendezvény neve:");
+
+    if(!eventName) return;
+
+    await sb
+        .from("events")
+        .update({is_active:false})
+        .eq("is_active",true);
+
+    const {error} = await sb
+        .from("events")
+        .insert([{
+            event_name:eventName,
+            is_active:true
+        }]);
+
+    if(error){
+        alert("Rendezvény aktiválási hiba: " + error.message);
+        return;
+    }
+
     alert("Rendezvény aktiválva.");
 }
+
 async function deactivateEvent(){
+
     if(!sb) return;
+
     const {error} = await sb
-    .from("events")
-    .update({is_active:false})
-    .eq("is_active",true);
+        .from("events")
+        .update({is_active:false})
+        .eq("is_active",true);
+
     if(error){
-        alert(error.message);
+        alert("Rendezvény leállítási hiba: " + error.message);
         return;
     }
+
     alert("Rendezvény leállítva.");
 }
+
 loadUsers();
 </script>
+
 </body>
 </html>
