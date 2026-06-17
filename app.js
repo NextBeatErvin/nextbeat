@@ -23,7 +23,7 @@ let photoData = "";
 if (modeBox) {
   modeBox.innerHTML = sb
     ? "✅ Online rendszer aktív."
-    : "❌ Supabase nincs beállítva. Ellenőrizd a config.js fájlt.";
+    : "❌ Supabase nincs beállítva.";
 }
 
 if (photoInput) {
@@ -74,31 +74,27 @@ async function uploadPhoto(email, photoBase64) {
   return data.publicUrl;
 }
 
-async function sendRegistrationEmail(email, fullName) {
-  try {
-    const response = await fetch(EMAIL_FUNCTION_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${NEXTBEAT_CONFIG.SUPABASE_ANON_KEY}`
-      },
-      body: JSON.stringify({
-        email: email,
-        name: fullName
-      })
-    });
+async function sendEmail(email, fullName, eventName = null) {
+  const response = await fetch(EMAIL_FUNCTION_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${NEXTBEAT_CONFIG.SUPABASE_ANON_KEY}`
+    },
+    body: JSON.stringify({
+      email: email,
+      name: fullName,
+      eventName: eventName
+    })
+  });
 
-    const result = await response.json();
+  const result = await response.json();
 
-    console.log("Email válasz:", result);
-
-    if (!response.ok) {
-      console.warn("Email küldési hiba:", result);
-    }
-
-  } catch (err) {
-    console.warn("Email küldési hiba:", err.message);
+  if (!response.ok || result.success === false) {
+    throw new Error(result.error || "Email küldési hiba.");
   }
+
+  return result;
 }
 
 if (form) {
@@ -106,7 +102,7 @@ if (form) {
     event.preventDefault();
 
     if (!sb) {
-      alert("Nincs Supabase kapcsolat. Ellenőrizd a config.js fájlt.");
+      alert("Nincs Supabase kapcsolat.");
       return;
     }
 
@@ -158,9 +154,13 @@ if (form) {
         throw error;
       }
 
-      await sendRegistrationEmail(email, fullName);
+      try {
+        await sendEmail(email, fullName);
+      } catch (emailErr) {
+        alert("Fiók létrejött, de az email nem ment ki: " + emailErr.message);
+      }
 
-      alert("Sikeres fiók létrehozás! Visszaigazoló email elküldve.");
+      alert("Sikeres fiók létrehozás!");
 
       form.reset();
 
