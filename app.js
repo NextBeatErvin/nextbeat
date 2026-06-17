@@ -15,6 +15,9 @@ const photoInput = document.getElementById("photoInput");
 const photoPreview = document.getElementById("photoPreview");
 const modeBox = document.getElementById("modeBox");
 
+const EMAIL_FUNCTION_URL =
+  "https://majmscyfzlvtjuropqvb.supabase.co/functions/v1/send-event-email";
+
 let photoData = "";
 
 if (modeBox) {
@@ -69,6 +72,23 @@ async function uploadPhoto(email, photoBase64) {
     .getPublicUrl(filePath);
 
   return data.publicUrl;
+}
+
+async function sendRegistrationEmail(email, fullName) {
+  try {
+    await fetch(EMAIL_FUNCTION_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        email: email,
+        name: fullName
+      })
+    });
+  } catch (err) {
+    console.warn("Email küldési hiba:", err.message);
+  }
 }
 
 if (form) {
@@ -128,7 +148,9 @@ if (form) {
         throw error;
       }
 
-      alert("Sikeres fiók létrehozás! Most már be tudsz jelentkezni.");
+      await sendRegistrationEmail(email, fullName);
+
+      alert("Sikeres fiók létrehozás! Visszaigazoló email elküldve.");
 
       form.reset();
 
